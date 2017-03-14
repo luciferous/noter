@@ -1,0 +1,42 @@
+#!/bin/sh
+set -e
+
+HTML=${HTML:-"pandoc --smart -t html"}
+
+list() {
+  for MD in $(ls -t $@); do
+    TITLE=$(sed '/^$/q' $MD | grep -o 'title="[^"]*' | cut -c 8-)
+    MODIFIED=$(stat -f "%Sm" -t "%Y-%m-%dT%T%z" $MD)
+    echo "${MD%.md}.html\t$TITLE\t$MODIFIED"
+  done
+}
+
+getenv() {
+  if [ -n "$1" ]; then
+    sed '/^$/q' $1 | cat notes.conf.sh -
+  else
+    cat notes.conf.sh
+  fi
+}
+
+case $1 in
+  atom)
+    list ${@:2} | sh -c "$(./notes env | paste -s -d' ' -) ./notes-atom.sh"
+    ;;
+  env)
+    getenv $2
+    ;;
+  index)
+    list ${@:2} | sh -c "$(./notes env | paste -s -d' ' -) ./notes-index.sh"
+    ;;
+  ls)
+    echo "FILE\tTITLE\tMODIFIED"
+    list ${@:2}
+    ;;
+  note)
+    ENV=$(./notes env $2 | paste -s -d' ' -)
+    sh -c "sed '1,/^$/d' $2 | $HTML | $ENV ./notes-html.sh"
+    ;;
+  *)
+    >&2 echo "Usage: $0 -h | index [hello.md, ...] | note hello.md"
+esac

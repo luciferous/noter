@@ -7,18 +7,24 @@ cat <<EOF
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>$title</title>
+    <title>$site_title</title>
     <link href="${prefix}theme/style.css" rel="stylesheet">
+    <link rel="alternate" type="application/atom+xml" href="${prefix}feed.atom" title="Atom Feed">
   </head>
   <body>
-    <h1>$title</h1>
+    <h1>$site_title</h1>
+    <ul>
 EOF
 
-# Body is sourced from STDIN and indented.
-sed 's/^/    /'
+while IFS=$'\t' read -r FILE TITLE UPDATED; do
+  cat <<EOF
+      <li><a href="${prefix}$FILE">$TITLE</a></li>
+EOF
+done
 
 # Print footer.
 cat <<EOF
+    </ul>
   </body>
 </html>
 EOF

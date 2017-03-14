@@ -1,14 +1,20 @@
 MD := $(filter-out README.md, $(wildcard *.md))
 HTML := $(MD:.md=.html)
 
-all: $(HTML)
+all: index.html feed.atom $(HTML)
 
 clean:
-	rm -f $(HTML)
+	rm -f index.html feed.atom $(HTML)
 
 .DELETE_ON_ERROR:
 
+feed.atom: $(HTML)
+	./notes atom $(MD) > $@
+
+index.html: $(HTML)
+	./notes index $(MD) > $@
+
 %.html: %.md
-	./noter $< > $@
+	./notes note $< > $@
 
 .PHONY: all clean
