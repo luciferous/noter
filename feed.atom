@@ -2,10 +2,15 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>https://luciferous.github.io</id>
   <title>notes</title>
-  <updated>2017-03-15T01:25:55-0700</updated>
+  <updated>2017-03-15T01:44:35-0700</updated>
+  <entry>
+    <id>https://luciferous.github.io/notes/asyncstream.html</id>
+    <title>AsyncStream</title>
+    <updated>2017-03-15T01:44:26-0700</updated>
+  </entry>
   <entry>
     <id>https://luciferous.github.io/notes/at-the-boarding-lounge.html</id>
     <title>At The Boarding Lounge</title>
-    <updated>2017-03-15T01:25:32-0700</updated>
+    <updated>2017-03-15T01:39:31-0700</updated>
   </entry>
 </feed>

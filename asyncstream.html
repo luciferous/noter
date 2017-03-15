@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AsyncStream</title>
+    <link href="/notes/theme/style.css" rel="stylesheet">
+    <link href="/notes/hk-pyg.css" rel="stylesheet">
+    <link rel="alternate" type="application/atom+xml" href="/notes/feed.atom" title="Atom Feed">
+  </head>
+  <body>
+    <h1>AsyncStream</h1>
+    <article>
+      <p>A lazy list of Futures.</p>
+      <ol style="list-style-type: decimal">
+      <li>Immutable - safe for concurrent access</li>
+      <li>Persistent - preserves previous versions when modified</li>
+      <li>Lazy - evaluated on demand</li>
+      </ol>
+      <p>Implemented as a chain of nodes.</p>
+      <pre><code>(a, --)--&gt;(b, --)--&gt;(c, --)--&gt;(...)</code></pre>
+      <p>The <code>Node</code> type.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">sealed</span> <span class="kw">trait</span> Node[+A]
+      <span class="kw">case</span> <span class="kw">object</span> Empty <span class="kw">extends</span> Node[Nothing]
+      <span class="kw">case</span> <span class="kw">class</span> Cons[A](head: A, tail: AsyncStream[A]) <span class="kw">extends</span> Node[A]</code></pre></div>
+      <p>The <code>AsyncStream</code> type.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> AsyncStream[A](node: Future[Node[A]])</code></pre></div>
+      <h3 id="basic-constructions">Basic constructions</h3>
+      <p>The empty stream. (This is the <code>AsyncStream</code> equivalent of <code>Nil</code>.)</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">AsyncStream.<span class="fu">empty</span></code></pre></div>
+      <p>Two examples <code>words: AsyncStream[String]</code> and <code>ints: AsyncStream[Int]</code>.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> words = <span class="fu">AsyncStream</span>(<span class="st">&quot;hello&quot;</span>, <span class="st">&quot;world&quot;</span>)
+      <span class="kw">val</span> ints = <span class="fu">AsyncStream</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</code></pre></div>
+      <h3 id="lifts">Lifts</h3>
+      <p>From <code>Option</code>.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> opt: Option[Int] = Some(<span class="dv">1</span>)
+      AsyncStream.<span class="fu">fromOption</span>(opt)</code></pre></div>
+      <p>From <code>Seq</code>.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> seq: Seq[Int] = Seq(<span class="dv">2</span>, <span class="dv">3</span>)
+      AsyncStream.<span class="fu">fromSeq</span>(seq)</code></pre></div>
+      <p>From <code>Future</code>.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> f: Future[Int] = Future.<span class="fu">value</span>(<span class="dv">4</span>)
+      AsyncStream.<span class="fu">fromFuture</span>(f)</code></pre></div>
+      <p>How does <code>fromFuture</code> work?</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> fromFuture[A](f: Future[A]): AsyncStream[A] =
+        <span class="fu">AsyncStream</span>(f.<span class="fu">map</span> { a =&gt; Node(a, AsyncStream.<span class="fu">empty</span>) })</code></pre></div>
+      <p>One <code>flatMap</code> to rule them all.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> AsyncStream.<span class="fu">_</span>
+      
+      <span class="kw">val</span> as = <span class="kw">for</span> {
+        x &lt;- <span class="fu">fromOption</span>(opt)
+        y &lt;- <span class="fu">fromSeq</span>(seq)
+        z &lt;- <span class="fu">fromFuture</span>(f)
+      } <span class="kw">yield</span> x + y + z
+      
+      Await.<span class="fu">result</span>(as.<span class="fu">toSeq</span>) == Seq(<span class="dv">7</span>, <span class="dv">8</span>)</code></pre></div>
+      <h3 id="alternatives">Alternatives</h3>
+      <p><strong><em>Why not <code>Future[Seq[A]]</code>?</em></strong></p>
+      <p>The <code>Future</code> represents a rendezvous with the supplier of the <code>Seq</code>. This signature implies that there’s a single rendezvous, during (and after) which the <code>Seq</code> is accessible. <code>AsyncStream</code> models the rendezvous of multiple <code>Future</code>s.</p>
+      <p><strong><em>OK, then why not <code>Seq[Future[A]]</code>?</em></strong></p>
+      <ol style="list-style-type: decimal">
+      <li><code>AsyncStream</code> is more convenient.</li>
+      <li>Explicit control of tail evaluation</li>
+      </ol>
+      <p>To the first point, <code>Seq[Future[A]]</code> requires double the number of <code>map</code> operations. Consider printing the stream:</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> seq: Seq[Future[A]] = ...
+      seq.<span class="fu">foreach</span> { f =&gt; f.<span class="fu">map</span>(println) }</code></pre></div>
+      <p><code>Seq[Future[A]]</code> requires two maps vs. just one when using <code>AsyncStream</code>.</p>
+      <pre><code>val as: AsyncStream[A]
+      as.foreach(println)</code></pre>
+      <p><strong><em>That doesn’t look so bad.</em></strong></p>
+      <p>Consider an operation <code>send: A =&gt; Future[Unit]</code> which requires the each iteration to wait until it completes. <code>foreach</code> isn’t enough, we have to use a <code>fold</code> with an accumulator that we can <code>flatMap</code> on.</p>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">seq.<span class="fu">foldLeft</span>(Future.<span class="fu">Done</span>) { (done, f) =&gt;
+        done before f.<span class="fu">flatMap</span>(send)
+      }</code></pre></div>
+      <p><code>AsyncStream</code>’s <code>foreachF</code> is a <code>foreach</code> specialized for use with <code>Future</code>.</p>
+      <pre><code>as.foreachF(send)</code></pre>
+      <p>The second point is very subtle: <code>AsyncStream</code> is evaluated in lock-step, at the completion of the last <code>send</code> operation, but <code>Seq[Future[A]]</code> (even when implemented as a Scala <code>Stream</code>) evaluates the entire stream. For infinite streams that operate with <code>Future</code>s, <code>AsyncStream</code> is the only viable approach.</p>
+    </article>
+  </body>
+</html>
