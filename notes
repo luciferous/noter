@@ -6,7 +6,7 @@ HTML=${HTML:-"pandoc --smart -t html"}
 list() {
   for MD in $(ls -t $@); do
     TITLE=$(sed '/^$/q' $MD | grep -o 'title="[^"]*' | cut -c 8-)
-    MODIFIED=$(stat -f "%Sm" -t "%Y-%m-%dT%T%z" $MD)
+    MODIFIED=$(date -u -r $(stat -f %m $MD) +%FT%T+00:00)
     echo "${MD%.md}.html\t$TITLE\t$MODIFIED"
   done
 }
