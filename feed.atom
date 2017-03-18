@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <id>https://luciferous.github.io</id>
+  <id>https://luciferous.github.io/notes/</id>
   <title>notes</title>
-  <updated>2017-03-15T01:44:35-0700</updated>
+  <updated>2017-03-18T15:20:57+00:00</updated>
   <entry>
     <id>https://luciferous.github.io/notes/asyncstream.html</id>
     <title>AsyncStream</title>
-    <updated>2017-03-15T01:44:26-0700</updated>
+    <updated>2017-03-18T22:20:28+00:00</updated>
   </entry>
   <entry>
     <id>https://luciferous.github.io/notes/at-the-boarding-lounge.html</id>
     <title>At The Boarding Lounge</title>
-    <updated>2017-03-15T01:39:31-0700</updated>
+    <updated>2017-03-18T22:20:28+00:00</updated>
   </entry>
 </feed>
