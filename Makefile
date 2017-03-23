@@ -1,5 +1,6 @@
-MD := $(filter-out README.md, $(wildcard *.md))
+MD := $(filter-out README.md index.md, $(wildcard *.md))
 HTML := $(MD:.md=.html)
+SYSTEM := Makefile notes $(wildcard *.sh)
 
 all: index.html feed.atom $(HTML)
 
@@ -8,13 +9,13 @@ clean:
 
 .DELETE_ON_ERROR:
 
-feed.atom: $(HTML)
+feed.atom: $(HTML) $(SYSTEM)
 	./notes atom $(MD) > $@
 
-index.html: $(HTML)
+index.html: index.md $(HTML) $(SYSTEM)
 	./notes index $(MD) > $@
 
-%.html: %.md
+%.html: %.md $(SYSTEM)
 	./notes note $< > $@
 
 .PHONY: all clean

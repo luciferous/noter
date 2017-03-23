@@ -23,6 +23,7 @@ sed 's/^/      /'
 # Print footer.
 cat <<EOF
     </article>
+    $tracking
   </body>
 </html>
 EOF

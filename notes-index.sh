@@ -13,18 +13,24 @@ cat <<EOF
   </head>
   <body>
     <h1>$site_title</h1>
-    <ul>
+    <article>
+EOF
+sed 's/^/      /'
+
+cat <<EOF
+      <ul>
 EOF
 
-while IFS=$'\t' read -r FILE TITLE UPDATED; do
-  cat <<EOF
-      <li><a href="${prefix}$FILE">$TITLE</a></li>
+./notes ls $@ | while IFS=$'\t' read -r FILE TITLE UPDATED; do
+cat <<EOF
+        <li><a href="${prefix}$FILE">$TITLE</a></li>
 EOF
 done
 
-# Print footer.
 cat <<EOF
-    </ul>
+      </ul>
+    </article>
+    $tracking
   </body>
 </html>
 EOF

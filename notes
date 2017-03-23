@@ -27,10 +27,10 @@ case $1 in
     getenv $2
     ;;
   index)
-    list ${@:2} | sh -c "$(./notes env | paste -s -d' ' -) ./notes-index.sh"
+    sed '1,/^$/d' index.md | $HTML | \
+      sh -c "$(./notes env | paste -s -d' ' -) ./notes-index.sh ${*:2}"
     ;;
   ls)
-    echo "FILE\tTITLE\tMODIFIED"
     list ${@:2}
     ;;
   note)
@@ -39,4 +39,5 @@ case $1 in
     ;;
   *)
     >&2 echo "Usage: $0 -h | index [hello.md, ...] | note hello.md"
+    exit 1
 esac
