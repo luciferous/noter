@@ -8,7 +8,7 @@ cat <<EOF
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>$site_title</title>
-    <link href="${prefix}theme/style.css" rel="stylesheet">
+    <link href="${prefix}themes/$theme/style.css" rel="stylesheet">
     <link rel="alternate" type="application/atom+xml" href="${prefix}feed.atom" title="Atom Feed">
   </head>
   <body>
