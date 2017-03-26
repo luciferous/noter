@@ -1,5 +1,6 @@
 title="AsyncStream"
 
+<section>
 A lazy list of Futures.
 
 1. Immutable - safe for concurrent access
@@ -25,8 +26,10 @@ The `AsyncStream` type.
 ```scala
 class AsyncStream[A](node: Future[Node[A]])
 ```
+</section>
 
-### Basic constructions
+<section>
+## Basic constructions
 
 The empty stream. (This is the `AsyncStream` equivalent of `Nil`.)
 
@@ -40,8 +43,10 @@ Two examples `words: AsyncStream[String]` and `ints: AsyncStream[Int]`.
 val words = AsyncStream("hello", "world")
 val ints = AsyncStream(1, 2, 3)
 ```
+</section>
 
-### Lifts
+<section>
+## Lifts
 
 From `Option`.
 
@@ -84,8 +89,11 @@ val as = for {
 
 Await.result(as.toSeq) == Seq(7, 8)
 ```
+</section>
 
-### Alternatives
+<section>
+## Alternatives
+
 ***Why not `Future[Seq[A]]`?***
 
 The `Future` represents a rendezvous with the supplier of the `Seq`. This signature implies that there's a single rendezvous, during (and after) which the `Seq` is accessible. `AsyncStream` models the rendezvous of multiple `Future`s.
@@ -126,3 +134,4 @@ as.foreachF(send)
 ```
 
 The second point is very subtle: `AsyncStream` is evaluated in lock-step, at the completion of the last `send` operation, but `Seq[Future[A]]` (even when implemented as a Scala `Stream`) evaluates the entire stream. For infinite streams that operate with `Future`s, `AsyncStream` is the only viable approach.
+</section>
