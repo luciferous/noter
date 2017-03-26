@@ -12,7 +12,6 @@ cat <<EOF
     <link rel="alternate" type="application/atom+xml" href="${prefix}feed.atom" title="Atom Feed">
   </head>
   <body>
-    <h1>$title</h1>
     <article>
 EOF
 sed 's/^/      /'
