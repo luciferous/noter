@@ -45,7 +45,7 @@
       <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> fromFuture[A](f: Future[A]): AsyncStream[A] =
         <span class="fu">AsyncStream</span>(f.<span class="fu">map</span> { a =&gt; Node(a, AsyncStream.<span class="fu">empty</span>) })</code></pre></div>
       <p>One <code>flatMap</code> to rule them all.</p>
-      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> AsyncStream.<span class="fu">_</span>
+      <div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> AsyncStream._
       
       <span class="kw">val</span> as = <span class="kw">for</span> {
         x &lt;- <span class="fu">fromOption</span>(opt)
