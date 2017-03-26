@@ -12,21 +12,18 @@ cat <<EOF
     <link rel="alternate" type="application/atom+xml" href="${prefix}feed.atom" title="Atom Feed">
   </head>
   <body>
-    <h1>$site_title</h1>
+    <h1>$title</h1>
     <article>
 EOF
 sed 's/^/      /'
-
 cat <<EOF
       <ul>
 EOF
-
-./notes ls $@ | while IFS=$'\t' read -r FILE TITLE UPDATED; do
+./notes ls $@ | while IFS=$'\t' read -r FILE MODIFIED TITLE; do
 cat <<EOF
         <li><a href="${prefix}$FILE">$TITLE</a></li>
 EOF
 done
-
 cat <<EOF
       </ul>
     </article>

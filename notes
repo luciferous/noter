@@ -2,42 +2,48 @@
 set -e
 
 HTML=${HTML:-"pandoc --smart -t html"}
+MAX_HEADER=${MAX_HEADER:-5000}
+
+die() { >&2 echo $1; exit 1; }
+body() { sed '1,/^$/d' $1; }
+header() { sh -c "$(./notes env $2) sh -c 'echo \$$1'" 2>/dev/null; }
+headers() { sed '/^$/q' $1 | head -c $MAX_HEADER; }
 
 list() {
-  for MD in $(ls -t $@); do
-    TITLE=$(sed '/^$/q' $MD | grep -o 'title="[^"]*' | cut -c 8-)
-    MODIFIED=$(date -u -r $(stat -f %m $MD) +%FT%T+00:00)
-    echo "${MD%.md}.html\t$TITLE\t$MODIFIED"
+  [ $# -eq 0 ] && { printf ""; return; }
+
+  for NOTE in $(ls -t $@); do paste -s -d"\t" - <<EOF
+${NOTE%.md}.html
+$(date -u -r $(stat -f %m $NOTE) +%FT%T+00:00)
+$(header title $NOTE)
+EOF
   done
 }
 
-getenv() {
+env_() {
   if [ -n "$1" ]; then
-    sed '/^$/q' $1 | cat notes.conf.sh -
+    headers $1 | cat notes.conf.sh - | sed 's/^#.*$//' | paste -s -d' ' -
   else
-    cat notes.conf.sh
+    sed 's/^#.*$//' notes.conf.sh | paste -s -d' ' -
   fi
 }
 
 case $1 in
   atom)
-    list ${@:2} | sh -c "$(./notes env | paste -s -d' ' -) ./notes-atom.sh"
-    ;;
-  env)
-    getenv $2
+    [ -n "$(header site_url index.md)" ] || die 'Have you set the site_url in notes.conf.sh?'
+    list ${@:2} | sh -c "$(./notes env) ./notes-atom.sh"
     ;;
   index)
-    sed '1,/^$/d' index.md | $HTML | \
-      sh -c "$(./notes env | paste -s -d' ' -) ./notes-index.sh ${*:2}"
-    ;;
-  ls)
-    list ${@:2}
+    [ -n "$(header title index.md)" ] || die 'Have you set the title in index.md?'
+    body index.md | $HTML | sh -c "$(./notes env index.md) ./notes-index.sh ${*:2}"
     ;;
   note)
-    ENV=$(./notes env $2 | paste -s -d' ' -)
-    sh -c "sed '1,/^$/d' $2 | $HTML | $ENV ./notes-html.sh"
+    [ -n "$(header title $2)" ] || die "Have you set the title in $2?"
+    body $2 | $HTML | sh -c "$(./notes env $2) ./notes-html.sh"
     ;;
-  *)
-    >&2 echo "Usage: $0 -h | index [hello.md, ...] | note hello.md"
-    exit 1
+
+  env) env_ $2 ;;
+  header) header $2 $3 ;;
+  ls) list ${@:2} ;;
+  *) exit 1
 esac
