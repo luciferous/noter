@@ -3,3 +3,4 @@ tracking="<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r
 site_title="notes"
 prefix=$prefix
 site_url=$site_url
+theme=tufte
